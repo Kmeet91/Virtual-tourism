@@ -1,0 +1,27 @@
+{% extends 'main/header_footer.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="text-center my-4">Your Bookmarked Destinations</h2>
+    
+    {% if bookmarked_destinations %}
+        <div class="row">
+            {% for destination in bookmarked_destinations %}
+                <div class="col-md-4">
+                    <div class="card mb-4 shadow-sm">
+                        <img src="{{ destination.image.url }}" class="card-img-top" alt="{{ destination.name }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ destination.name }}</h5>
+                            <p class="card-text">{{ destination.description|truncatewords:20 }}</p>
+                            <a href="{% url 'main:destination_detail' destination.id %}" class="btn btn-primary">View Details</a>
+                            <a href="{% url 'main:toggle_bookmark' destination.id %}" class="btn btn-danger">Remove</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-center">You haven't bookmarked any destinations yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

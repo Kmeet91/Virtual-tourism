@@ -1,0 +1,40 @@
+<!-- destinations/templates/destinations/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Tourism Site{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-white shadow-md">
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="{% url 'home' %}" class="text-xl font-bold">Rani Ki Vav</a>
+            <div class="flex items-center">
+                {% if user.is_authenticated %}
+                    <span class="mr-4">Welcome, {{ user.username }}</span>
+                    {% if user.is_superuser %}
+                        <a href="{% url 'admin_dashboard' %}" class="mr-4">Admin Dashboard</a>
+                    {% endif %}
+                    <a href="{% url 'logout' %}" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">Logout</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="mr-4">Login</a>
+                    <a href="{% url 'register' %}" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto mt-6 px-4">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-8 py-4">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2023 Tourism Site. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

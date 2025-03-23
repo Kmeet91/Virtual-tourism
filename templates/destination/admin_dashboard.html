@@ -1,0 +1,29 @@
+<!-- destinations/templates/destinations/admin_dashboard.html -->
+{% extends 'destinations/base.html' %}
+
+{% block title %}Admin Dashboard - Tourism Site{% endblock %}
+
+{% block content %}
+    <h1 class="text-3xl font-bold mb-6">Admin Dashboard</h1>
+
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-2xl font-semibold mb-4">Add New Destination</h2>
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Add Destination</button>
+        </form>
+    </div>
+
+    <h2 class="text-2xl font-semibold mt-8 mb-4">Manage Destinations</h2>
+    <div class="space-y-6">
+        {% for destination in destinations %}
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-xl font-semibold mb-2">{{ destination.name }}</h3>
+                <p class="text-gray-600 mb-4">{{ destination.location }}, {{ destination.state }}</p>
+                <a href="{% url 'destination_detail' destination.id %}" class="text-blue-500 hover:text-blue-600 mr-4">View Details</a>
+                <a href="{% url 'remove_destination' destination.id %}" class="text-red-500 hover:text-red-600" onclick="return confirm('Are you sure you want to remove this destination?')">Remove Destination</a>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

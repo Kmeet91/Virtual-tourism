@@ -1,0 +1,53 @@
+{% extends 'main/header_footer.html' %}
+
+{% block title %}Contact Us - Gujarat Tourism{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center">Contact Us</h1>
+    <form method="post" class="mx-auto w-50">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input type="text" class="form-control placeholder-secondary" name="name" required placeholder="Enter your full name">
+            {% if form.name.errors %}
+                <div class="text-danger">
+                    {% for error in form.name.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control placeholder-secondary" name="email" required placeholder="Enter your email address">
+            {% if form.email.errors %}
+                <div class="text-danger">
+                    {% for error in form.email.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">Phone</label>
+            <input type="text" class="form-control placeholder-secondary" name="phone" required placeholder="Enter your phone number">
+            {% if form.phone.errors %}
+                <div class="text-danger">
+                    {% for error in form.phone.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Message</label>
+            <textarea class="form-control placeholder-secondary" name="message" required placeholder="Enter your message here..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Send</button>
+    </form>
+</div>
+{% endblock %}
