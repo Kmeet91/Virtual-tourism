@@ -1,2 +1,2 @@
 # Virtual-tourism
-This my Django-based project.
+This is my Django-based project.
