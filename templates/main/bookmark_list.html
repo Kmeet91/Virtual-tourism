@@ -1,0 +1,9 @@
+<ul>
+    {% for bookmark in bookmarks %}
+        <li>
+            <a href="{{ bookmark.url }}">{{ bookmark.title }}</a>
+            <p>{{ bookmark.description }}</p>
+        </li>
+    {% endfor %}
+</ul>
+

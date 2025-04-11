@@ -1,0 +1,78 @@
+{% extends 'main/header_footer.html' %}
+
+{% block title %}Subscribe Now{% endblock %}
+
+{% block content %}
+<div class="container text-center mt-5">
+    <h2 class="mb-4">Unlock Exclusive Content</h2>
+    <p class="lead">Subscribe now to access premium features like 360° destination views and more.</p>
+    
+    {% if user.is_authenticated and not user.is_subscribed %}
+        <div class="card p-4 shadow-lg mx-auto" style="max-width: 500px;">
+            <h4 class="mb-3">Choose Your Plan</h4>
+            <form method="POST" action="{% url 'AUTH:subscribe' %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.GET.next }}">
+                <!-- Email Field (Pre-filled and Read-only) -->
+                <div class="form-group mb-3 text-start">
+                    <label for="email">Email Address</label>
+                    <input type="email" name="email" class="form-control" id="email" value="{{ user.email }}" readonly>
+                </div>
+                <!-- Plan Selection -->
+                <div class="form-check text-start mb-3">
+                    <input class="form-check-input" type="radio" name="plan" id="monthly" value="monthly" checked>
+                    <label class="form-check-label" for="monthly">Monthly - $9.99</label>
+                </div>
+                <div class="form-check text-start mb-3">
+                    <input class="form-check-input" type="radio" name="plan" id="yearly" value="yearly">
+                    <label class="form-check-label" for="yearly">Yearly - $99.99</label>
+                </div>
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary mt-3 w-100">Subscribe Now</button>
+            </form>
+        </div>
+    {% elif user.is_subscribed %}
+        <div class="alert alert-success mt-4">You are already subscribed! Enjoy your premium access.</div>
+        <a href="{% url 'main:home' %}" class="btn btn-secondary mt-3">Home</a>
+    {% else %}
+        <div class="alert alert-warning">You need to <a href="{% url 'AUTH:login' %}?next={{ request.GET.next }}">log in</a> to subscribe.</div>
+    {% endif %}
+</div>
+
+<style>
+    /* Custom styles for the subscription page */
+    .card {
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: linear-gradient(45deg, #007bff, #0056b3);
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #004085;
+    }
+
+    .form-check-input:checked {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .form-check-label {
+        font-size: 1.1rem;
+    }
+
+    .form-control:read-only {
+        background-color: #f8f9fa;
+        cursor: not-allowed;
+    }
+</style>
+{% endblock %}

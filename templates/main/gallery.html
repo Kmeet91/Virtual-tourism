@@ -1,0 +1,246 @@
+{% extends 'main/header_footer.html' %}
+{% load static %}
+
+{% block title %}Gallery - Gujarat Tourism{% endblock %}
+
+{% block content %}
+<div class="container text-center my-5">
+    <h1 class="text-black">Gallery</h1>
+    <div class="row row-cols-1 row-cols-md-2 g-4">  <!-- 2 cards per row -->
+        {% for destination in destinations %}
+        <div class="col fade-in-row destination-item" data-name="{{ destination.name|lower }}" data-state="{{ destination.state|lower }}">
+            <div class="card border-0 shadow-sm bg-transparent overflow-hidden position-relative destination-card" data-bs-toggle="modal" data-bs-target="#destinationModal" data-destination-id="{{ destination.id }}">
+                <div class="position-relative overflow-hidden destination-image-container">
+                    {% if destination.image %}
+                        <img src="{{ destination.image.url }}" class="img-fluid rounded destination-image" alt="{{ destination.name }}">
+                    {% else %}
+                        <div class="bg-secondary d-flex justify-content-center align-items-center text-white no-image">
+                            <i class="bi bi-image" style="font-size: 3rem;"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Name and State at Bottom Left -->
+                    <div class="destination-info">
+                        <h5 class="mb-0">{{ destination.name }}</h5>
+                        <small>{{ destination.state }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-center text-white">No destinations available.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="destinationModal" tabindex="-1" aria-labelledby="destinationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="destinationModalLabel">Destination Images</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Carousel -->
+                <div id="destinationCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner" id="carousel-inner">
+                        <!-- Images will be dynamically inserted here -->
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#destinationCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#destinationCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="downloadAllImages">Download All</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scroll Animation Script -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const fadeInElements = document.querySelectorAll(".fade-in-row");
+
+        function checkScroll() {
+            const triggerBottom = window.innerHeight * 0.9;
+
+            fadeInElements.forEach((el) => {
+                const boxTop = el.getBoundingClientRect().top;
+                if (boxTop < triggerBottom) {
+                    el.classList.add("visible");
+                }
+            });
+        }
+
+        window.addEventListener("scroll", checkScroll);
+        checkScroll();
+    });
+</script>
+
+<!-- Modal and Carousel Script -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const destinationCards = document.querySelectorAll(".destination-card");
+        const carouselInner = document.getElementById("carousel-inner");
+        const downloadAllButton = document.getElementById("downloadAllImages");
+        const modalTitle = document.getElementById("destinationModalLabel");
+
+        // Fetch the destination_images dictionary passed from Django
+        const destinationImages = {{ destination_images|safe }};
+
+        destinationCards.forEach(card => {
+            card.addEventListener("click", function () {
+                const destinationId = this.getAttribute("data-destination-id");
+                const destinationName = this.closest(".destination-item").getAttribute("data-name");
+
+                // Update modal title
+                modalTitle.textContent = destinationName.charAt(0).toUpperCase() + destinationName.slice(1);
+
+                // Get images for the selected destination
+                const images = destinationImages[destinationId] || [];
+
+                // Clear previous carousel items
+                carouselInner.innerHTML = "";
+
+                if (images.length === 0) {
+                    carouselInner.innerHTML = `
+                        <div class="carousel-item active">
+                            <div class="d-flex justify-content-center align-items-center text-secondary" style="height: 400px;">
+                                <i class="bi bi-image" style="font-size: 5rem;"></i>
+                                <p class="ms-3">No images available</p>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Add new carousel items
+                images.forEach((imgObj, index) => {
+                    const carouselItem = document.createElement("div");
+                    carouselItem.classList.add("carousel-item");
+                    if (index === 0) carouselItem.classList.add("active");
+
+                    const img = document.createElement("img");
+                    img.src = imgObj.image;
+                    img.classList.add("d-block", "w-100", "rounded");
+                    img.alt = `Image ${index + 1} of ${destinationName}`;
+
+                    carouselItem.appendChild(img);
+                    carouselInner.appendChild(carouselItem);
+                });
+
+                // Set up download functionality
+                downloadAllButton.onclick = function () {
+                    const zip = new JSZip();
+                    const folder = zip.folder(`${destinationName}_images`);
+
+                    images.forEach((imgObj, index) => {
+                        fetch(imgObj.image)
+                            .then(response => response.blob())
+                            .then(blob => {
+                                folder.file(`${destinationName}-${index + 1}.jpg`, blob);
+                                if (index === images.length - 1) {
+                                    zip.generateAsync({ type: "blob" }).then(content => {
+                                        saveAs(content, `destination_${destinationName}_images.zip`);
+                                    });
+                                }
+                            });
+                    });
+                };
+            });
+        });
+    });
+</script>
+
+
+
+
+<!-- Include JSZip and FileSaver libraries for zip functionality -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+<!-- Scroll Animation & Card Styling CSS -->
+<style>
+    /* Destination Card Styles */
+    .destination-card {
+        transition: transform 0.3s ease-in-out;
+        height: 320px; /* Increased card height */
+        cursor: pointer;
+    }
+
+    /* Hover effect */
+    .destination-card:hover {
+        transform: translateY(-5px);
+    }
+
+    /* Image Container to ensure full coverage */
+    .destination-image-container {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Image Styling - Ensure it fits card */
+    .destination-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* Ensures the image covers the entire space */
+        border-radius: 10px;
+    }
+
+    /* Placeholder for missing images */
+    .no-image {
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
+    }
+
+    /* Position the text in the bottom-left corner */
+    .destination-info {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 10px;
+        color: white;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+        border-radius: 0 0 10px 10px;
+    }
+
+    /* Ensure text does not overflow */
+    .destination-info h5, 
+    .destination-info small {
+        margin: 0;
+        padding-left: 8px;
+    }
+
+    /* Fade-in effect for rows on scroll */
+    .fade-in-row {
+        opacity: 0;
+        transform: translateY(50px);
+        transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+    }
+    
+    .fade-in-row.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* Modal Carousel Styling */
+    .carousel-item img {
+        border-radius: 10px;
+    }
+</style>
+
+{% endblock %}

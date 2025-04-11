@@ -1,0 +1,115 @@
+{% extends 'main/header_footer.html' %}
+{% load static %}
+
+{% block title %}About Us - Gujarat Tourism{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="about-hero-section bg-dark text-white py-5">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-4 animate__animated animate__fadeInDown">About Virtual Tourism</h1>
+        <p class="lead text-muted animate__animated animate__fadeInUp">Discover the beauty, history, and vibrant culture of Gujarat. From ancient heritage sites to breathtaking landscapes, Gujarat offers an unforgettable travel experience.</p>
+    </div>
+</section>
+
+<!-- Why Visit Section -->
+<section class="container my-5">
+    <div class="row align-items-center g-5">
+        <div class="col-md-6 animate__animated animate__fadeInLeft">
+            <img src="{% get_media_prefix %}about_image.webp" alt="Explore Gujarat Tourism" class="img-fluid rounded shadow-lg" style="width:500px; height:450px;">
+        </div>
+        <div class="col-md-6 animate__animated animate__fadeInRight">
+            <h2 class="text-primary mb-4">Why Visit Our Website?</h2>
+            <ul class="list-unstyled">
+                <li class="mb-3">
+                    <i class="fas fa-map-marked-alt text-primary me-2"></i>
+                    <strong>Comprehensive Travel Guides:</strong> Detailed guides for exploring Gujarat's top destinations.
+                </li>
+                <li class="mb-3">
+                    <i class="fas fa-calendar-alt text-primary me-2"></i>
+                    <strong>Latest Updates:</strong> Stay informed about events, festivals, and special occasions.
+                </li>
+                <li class="mb-3">
+                    <i class="fas fa-camera-retro text-primary me-2"></i>
+                    <strong>Stunning Photography:</strong> Immerse yourself in Gujarat's beauty through high-quality images and virtual tours.
+                </li>
+                <li class="mb-3">
+                    <i class="fas fa-concierge-bell text-primary me-2"></i>
+                    <strong>Curated Recommendations:</strong> Expertly curated travel tips and itineraries.
+                </li>
+                <li class="mb-3">
+                    <i class="fas fa-comments text-primary me-2"></i>
+                    <strong>Interactive Community:</strong> Connect with fellow travelers and share your experiences.
+                </li>
+            </ul>
+            <a href="/gallery" class="btn btn-primary mt-3">Explore Gallery</a>
+        </div>
+    </div>
+</section>
+
+<!-- Explore More Section -->
+<section class="container my-5 text-center">
+    <h2 class="mb-4 animate__animated animate__fadeIn">Explore More</h2>
+    <p class="lead text-muted mb-4 animate__animated animate__fadeIn">Discover the top destinations and hidden gems of Gujarat.</p>
+    <a href="/" class="btn btn-primary btn-lg animate__animated animate__pulse animate__infinite">View Top Destinations</a>
+</section>
+
+<!-- Testimonials Section -->
+<section class="bg-light py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">What Our Visitors Say</h2>
+        <div class="row g-4">
+            <div class="col-md-4 animate__animated animate__fadeInUp">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <p class="card-text">"Virtual Tourism made planning my trip to Gujarat so easy! The guides and tips were incredibly helpful."</p>
+                        <footer class="text-muted">- Priya S.</footer>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 animate__animated animate__fadeInUp animate__delay-1s">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <p class="card-text">"The virtual tours are amazing! I felt like I was already there before my trip."</p>
+                        <footer class="text-muted">- Rajesh K.</footer>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 animate__animated animate__fadeInUp animate__delay-2s">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <p class="card-text">"The community reviews helped me choose the best places to visit. Highly recommended!"</p>
+                        <footer class="text-muted">- Anjali M.</footer>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- JavaScript for Animations -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Add animations on scroll
+        const elements = document.querySelectorAll('.animate__animated');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add(entry.target.dataset.animation);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        elements.forEach(element => {
+            observer.observe(element);
+        });
+    });
+</script>
+
+<!-- Add Animate.css for animations -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+<!-- Add FontAwesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+{% endblock %}

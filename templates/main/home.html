@@ -1,0 +1,304 @@
+{% extends 'main/header_footer.html' %}
+{% load static %}
+{% block title %}Home - Gujarat Tourism{% endblock %}
+{% block content %}
+
+<!-- Video Header -->
+<header class="video-header">
+  <video autoplay loop muted>
+    <source src="{% get_media_prefix %}homepage_video.mp4" type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+  <div class="video-overlay">
+    <h1>Explore the World Virtually</h1>
+  </div>
+</header>
+
+<h2 class="text-center text-black my-4">Popular Destinations</h2>
+<!-- Image Slider -->
+<div id="destinationCarousel" class="carousel slide container-fluid my-4" data-bs-ride="carousel" data-bs-interval="2500">
+  <div class="carousel-inner">
+    {% for destination in popular_destinations %}
+    <div class="carousel-item {% if forloop.first %}active{% endif %} position-relative">
+      <!-- Blurred Background Image -->
+      <div class="position-absolute top-0 start-0 w-100 h-100" style="background: url('{{ destination.image.url }}') center/cover no-repeat; filter: blur(3px);"></div>
+
+      <!-- Centered Image and Caption -->
+      <div class="d-flex justify-content-center align-items-center" style="position: relative; height: 100vh; z-index: 2">
+        <a href="{% url 'main:destination_detail' id=destination.id %}" class="text-decoration-none text-white">
+          <img src="{{ destination.image.url }}" class="shadow-lg" alt="{{ destination.name }}" style="border-radius: 15px; object-fit: cover; height: 600px; width: 100vh; max-width: 800px; display: block; margin: 0 auto;"/>
+        </a>
+
+        <!-- Caption (On Top of Image) -->
+        <div class="position-absolute bottom-0 start-0 p-3 text-white bg-dark bg-opacity-50 rounded shadow ms-4 mb-4" style="z-index: 3; width: auto">
+          <h4 class="fw-bold mb-1">{{ destination.name }}</h4>
+          <p class="mb-0">{{ destination.state }}</p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Carousel Controls (Ensure They Are On Top) -->
+  <button class="carousel-control-prev" type="button" data-bs-target="#destinationCarousel" data-bs-slide="prev" style="z-index: 4">
+    <span class="carousel-control-prev-icon"></span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#destinationCarousel" data-bs-slide="next" style="z-index: 4">
+    <span class="carousel-control-next-icon"></span>
+  </button>
+</div>
+
+<!-- Search Bar with Category Filter -->
+<div class="container my-4">
+  <div class="input-group">
+    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+    <input type="text" id="searchInput" class="form-control" placeholder="Search for a place or state..." onkeyup="filterDestinations()"/>
+    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+      <i class="bi bi-filter"></i>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end">
+      <li><a class="dropdown-item" href="#" onclick="filterByCategory('')">All</a></li>
+      <li><a class="dropdown-item" href="#" onclick="filterByCategory('beach')">Beach</a></li>
+      <li><a class="dropdown-item" href="#" onclick="filterByCategory('heritage')">Heritage</a></li>
+      <li><a class="dropdown-item" href="#" onclick="filterByCategory('wildlife')">Wildlife</a></li>
+      <li><a class="dropdown-item" href="#" onclick="filterByCategory('religious')">Religious</a></li>
+      <li><a class="dropdown-item" href="#" onclick="filterByCategory('adventure')">Tracking</a></li>
+      <li><a class="dropdown-item" href="#" onclick="filterByCategory('hill_station')">Hill Station</a></li>
+    </ul>
+  </div>
+</div>
+
+<section id="destinations" class="container my-5">
+  <h2 class="text-center mb-4 text-black">Explore Places in Gujarat</h2>
+  <div class="row g-4">
+    {% for destination in destinations %}
+    <div class="col-md-4 fade-in-row destination-item" data-name="{{ destination.name|lower }}" data-state="{{ destination.state|lower }}" data-category="{{ destination.category }}">
+      <div class="card border-0 shadow-sm bg-transparent overflow-hidden position-relative destination-card">
+        <a href="{% url 'main:destination_detail' id=destination.id %}" class="text-decoration-none text-dark h-100">
+          <div class="h-100 w-100 position-relative overflow-hidden">
+            {% if destination.image %}
+            <img src="{{ destination.image.url }}" alt="{{ destination.name }}" class="w-100 h-100 object-fit-cover rounded"/>
+            {% else %}
+            <div class="bg-secondary h-100 w-100 d-flex justify-content-center align-items-center text-white">
+              <i class="bi bi-image" style="font-size: 3rem"></i>
+            </div>
+            {% endif %}
+            <div class="position-absolute bottom-0 start-0 w-100 text-white p-3" style="background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);">
+              <h5 class="mb-0">{{ destination.name }}</h5>
+              <small class="text-light">{{ destination.state }}</small>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+    {% empty %}
+    <p class="text-center text-white">No destinations available.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<style>
+  .input-group-text {
+    border-right: none;
+  }
+
+  .form-control {
+    border-left: none;
+    box-shadow: none;
+  }
+
+  .carousel-item {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .carousel-item .blur-background {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: inherit;
+    filter: blur(15px);
+    opacity: 0.5;
+    z-index: 0;
+  }
+
+  .video-header {
+    position: relative;
+    width: 100%;
+    height: 80vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .video-header video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  .video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .video-overlay h1 {
+    color: white;
+    font-size: 3rem;
+    font-weight: bold;
+  }
+
+  .destination-card {
+    transition: transform 0.3s ease-in-out;
+    height: 300px; /* Fixed height for all cards */
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    border-radius: 15px !important;
+  }
+
+  .destination-card:hover {
+    transform: translateY(-10px);
+  }
+
+  .object-fit-cover {
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.3s ease;
+  }
+
+  .destination-card:hover .object-fit-cover {
+    transform: scale(1.05);
+  }
+
+  .no-image {
+    width: 100%;
+    height: 100%;
+    min-height: 250px;
+    border-radius: 15px;
+  }
+
+  .fade-in-row {
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+  }
+
+  .fade-in-row.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .caption-custom {
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 10px;
+    font-size: 1.2rem;
+    max-width: 60%;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .destination-card {
+      height: 250px; /* Slightly smaller for mobile */
+    }
+
+    .video-overlay h1 {
+      font-size: 2rem;
+    }
+  }
+</style>
+
+<script>
+  let currentCategory = "";
+
+function filterDestinations() {
+    let input = document.getElementById("searchInput").value.toLowerCase().trim();
+    let destinations = document.querySelectorAll(".destination-item");
+
+    destinations.forEach((item) => {
+        let name = item.getAttribute("data-name").toLowerCase();
+        let state = item.getAttribute("data-state").toLowerCase();
+        let category = item.getAttribute("data-category");
+
+        let nameMatch = name.includes(input);
+        let stateMatch = state.includes(input);
+        let categoryMatch = currentCategory === "" || category === currentCategory;
+
+        if ((nameMatch || stateMatch) && categoryMatch) {
+            item.style.display = "block";
+        } else {
+            item.style.display = "none";
+        }
+    });
+}
+
+function filterByCategory(category) {
+    currentCategory = category;
+    filterDestinations(); // Reapply filter after category change
+}
+
+// Event listener for search input
+document.getElementById("searchInput").addEventListener("input", filterDestinations);
+
+
+  function fuzzyMatch(str, query) {
+    if (str.includes(query)) return true;
+
+    let threshold = Math.ceil(query.length * 0.3);
+    return getLevenshteinDistance(str, query) <= threshold;
+  }
+
+  function getLevenshteinDistance(a, b) {
+    let dp = Array(a.length + 1)
+      .fill(null)
+      .map(() => Array(b.length + 1).fill(0));
+
+    for (let i = 0; i <= a.length; i++) dp[i][0] = i;
+    for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+
+    for (let i = 1; i <= a.length; i++) {
+      for (let j = 1; j <= b.length; j++) {
+        if (a[i - 1] === b[j - 1]) {
+          dp[i][j] = dp[i - 1][j - 1];
+        } else {
+          dp[i][j] = 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+        }
+      }
+    }
+    return dp[a.length][b.length];
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+          } else {
+            entry.target.classList.remove("visible");
+          }
+        });
+      },
+      { threshold: 0.2 }
+    );
+
+    document.querySelectorAll(".fade-in-row").forEach((row) => {
+      observer.observe(row);
+    });
+  });
+</script>
+
+{% endblock %}

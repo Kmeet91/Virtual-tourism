@@ -1,0 +1,895 @@
+{% extends 'main/header_footer.html' %} {% block title %}{{ destination.name }}
+- Gujarat Tourism{% endblock %} {% block content %}
+
+<!-- Banner Section -->
+<div class="innerBannerPage cf" style="position: relative">
+  <img
+    src="{{ destination.image.url }}"
+    class="imgW100p"
+    alt="{{ destination.name }}"
+    style="object-fit: cover; height: 100vh; width: 100%"
+  />
+  <!-- Bookmark Button -->
+  <button
+    id="bookmark-btn"
+    class="btn d-flex align-items-center justify-content-center"
+    onclick="toggleBookmark()"
+    style="
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 10;
+      background-color: transparent;
+      color: inherit;
+      width: 50px;
+      height: 50px;
+      padding: 0;
+      border-radius: 50%;
+      border: 2px solid #007bff;
+    "
+  >
+    <i
+      id="bookmark-icon"
+      class="{% if is_bookmarked %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"
+      style="font-size: 30px; color: #007bff"
+    ></i>
+  </button>
+
+  <div class="innerBannerPageInfo">
+    <div class="container d-flex justify-content-between align-items-center">
+      <h1 class="animated fadeInRightShort go">
+        <span>{{ destination.name }}, {{ destination.state }}</span>
+      </h1>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap Navbar for Tabs -->
+<nav class="destinationTabsNav navbar-expand-lg sticky-top">
+  <div class="container">
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#destinationTabsNav"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div
+      class="collapse navbar-collapse justify-content-center"
+      id="destinationTabsNav"
+    >
+      <ul class="nav nav-tabs" id="destinationTabs">
+        <li class="nav-item">
+          <a class="nav-link active" data-bs-toggle="tab" href="#about"
+            >About</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="tab" href="#gallery"
+            >Image Gallery</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="tab" href="#map">Map</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="tab" href="#view360">360° View</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Tab Content with Animation -->
+<!-- About Tab -->
+<div id="about" class="tab-pane fade show active animated-pane">
+  <div class="row">
+    <!-- Left Column (2/3 for Information) -->
+    <div class="col-md-8">
+      <div class="card shadow-lg border-0 p-4">
+        <div class="card-body">
+          <h3 class="fw-bold text-primary text-center">
+            {{ destination.name }}
+          </h3>
+          <hr />
+          <span class="mt-3 text-muted fs-5">
+            {{ destination.description|safe }}
+            <!-- Use |safe if the description contains HTML -->
+          </span>
+          <!-- Highlight Links in the Description -->
+          <script>
+            document.addEventListener("DOMContentLoaded", function () {
+              const description = document.querySelector("#about .card-body p");
+              if (description) {
+                const links = description.querySelectorAll("a");
+                links.forEach((link) => {
+                  link.classList.add(
+                    "text-decoration-underline",
+                    "text-primary",
+                    "fw-bold"
+                  );
+                  link.setAttribute("target", "_blank");
+                });
+              }
+            });
+          </script>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column (1/3 for User Reviews) -->
+    <div class="col-md-4">
+      <div class="card shadow-lg border-0 p-4">
+        <div class="card-body">
+          <h4 class="fw-bold text-center mb-4">User Reviews</h4>
+
+          <form
+            id="reviewForm"
+            method="post"
+            action="{% url 'main:submit_review' destination.id %}"
+            class="mb-4"
+          >
+            {% csrf_token %}
+            <!-- Review Comment -->
+            <div class="mb-3">
+              <textarea
+                class="form-control"
+                id="comment"
+                name="comment"
+                rows="3"
+                placeholder="Write your review..."
+                required
+              ></textarea>
+            </div>
+            <!-- Review Rating -->
+            <div class="mb-3">
+              <input
+                type="number"
+                class="form-control"
+                id="rating"
+                name="rating"
+                min="1"
+                max="5"
+                placeholder="Rating (1 to 5)"
+                required
+              />
+            </div>
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary w-100">
+              <i class="bi bi-send-fill"></i> Submit Review
+            </button>
+          </form>
+
+          <!-- Display User Reviews -->
+          <div id="reviewsContainer">
+            {% if reviews %} {% for review in reviews %}
+            <div class="review-item mb-3">
+              <div class="d-flex align-items-center">
+                <!-- User Profile Logo -->
+                <div class="profile-logo me-3">
+                  {% if review.profile.avatar %}
+                  <img
+                    src="{{ review.profile.avatar.url }}"
+                    alt="{{ review.profile.first_name }}"
+                    class="rounded-circle"
+                    style="width: 50px; height: 50px; object-fit: cover"
+                  />
+                  {% else %}
+                  <!-- Default avatar if no profile or avatar exists -->
+                  <div
+                    class="rounded-circle d-flex align-items-center justify-content-center"
+                    style="
+                      width: 50px;
+                      height: 50px;
+                      background-color: #007bff;
+                      color: white;
+                      font-size: 20px;
+                    "
+                  >
+                    {{review.profile.first_name|first|upper
+                    }}{{review.profile.last_name|first|upper}}
+                  </div>
+                  {% endif %}
+                </div>
+                <!-- User Name, Review, and Rating -->
+                <div>
+                  <p class="mb-1 fw-bold">
+                    {{ review.profile.first_name }} {{review.profile.last_name}}
+                  </p>
+                  <p class="mb-0 text-muted">{{ review.comment }}</p>
+                  <small class="text-muted"
+                    >Rating: {{ review.rating }}/5</small
+                  >
+                </div>
+              </div>
+              <hr class="my-2" />
+            </div>
+            {% endfor %} {% else %}
+            <p class="text-center text-muted">
+              No reviews yet. Be the first to review!
+            </p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JavaScript for Form Submission -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const reviewForm = document.getElementById("reviewForm");
+        if (reviewForm) {
+          reviewForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            // Check if the user is logged in
+            const isAuthenticated = "{{ user.is_authenticated }}" === "True";
+
+            if (!isAuthenticated) {
+              // Save form data to sessionStorage
+              const formData = {
+                comment: document.getElementById("comment").value,
+                rating: document.getElementById("rating").value,
+              };
+              sessionStorage.setItem(
+                "reviewFormData",
+                JSON.stringify(formData)
+              );
+
+              // Redirect to login page with 'next' parameter
+              window.location.href =
+                "{% url 'AUTH:login' %}?next={{ request.path }}";
+              return;
+            }
+
+            // If logged in, submit the form
+            const formData = new FormData(reviewForm);
+            fetch("{% url 'main:submit_review' destination.id %}", {
+              method: "POST",
+              body: formData,
+              headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+              },
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.success) {
+                  // Clear the form
+                  reviewForm.reset();
+
+                  // Create a new review element
+                  const reviewItem = document.createElement("div");
+                  reviewItem.classList.add("review-item", "mb-3");
+
+                  const reviewContent = `
+              <div class="d-flex align-items-center">
+                <div class="profile-logo me-3">
+                  ${
+                    data.review.avatar_url
+                      ? `<img src="${data.review.avatar_url}" alt="${data.review.user_name}" class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;" />`
+                      : `<div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background-color: #007bff; color: white; font-size: 20px;">
+                        ${data.review.user_name
+                          .split(" ")
+                          .map((name) => name[0].toUpperCase())
+                          .join("")}
+                      </div>`
+                  }
+                </div>
+                <div>
+                  <p class="mb-1 fw-bold">${data.review.user_name}</p>
+                  <p class="mb-0 text-muted">${data.review.comment}</p>
+                  <small class="text-muted">Rating: ${
+                    data.review.rating
+                  }/5</small>
+                </div>
+              </div>
+              <hr class="my-2" />
+            `;
+
+                  reviewItem.innerHTML = reviewContent;
+
+                  // Append the new review to the reviews container
+                  const reviewsContainer =
+                    document.getElementById("reviewsContainer");
+                  reviewsContainer.insertBefore(
+                    reviewItem,
+                    reviewsContainer.firstChild
+                  );
+
+                  // Remove the "No reviews yet" message if it exists
+                  const noReviewsMessage = reviewsContainer.querySelector(
+                    "p.text-center.text-muted"
+                  );
+                  if (noReviewsMessage) {
+                    noReviewsMessage.remove();
+                  }
+                } else {
+                  alert("Error submitting review.");
+                }
+              })
+              .catch((error) => console.error("Error:", error));
+          });
+
+          // Restore form data after login
+          const savedFormData = sessionStorage.getItem("reviewFormData");
+          if (savedFormData) {
+            const { comment, rating } = JSON.parse(savedFormData);
+            document.getElementById("comment").value = comment;
+            document.getElementById("rating").value = rating;
+            sessionStorage.removeItem("reviewFormData"); // Clear saved data
+          }
+        }
+      });
+    </script>
+
+    <!-- Optional CSS for Styling -->
+    <style>
+      /* Review Section Styling */
+      .review-item {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .review-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .profile-logo img {
+        border: 2px solid #007bff;
+      }
+
+      /* Form Styling */
+      #reviewForm textarea {
+        resize: none; /* Disable resizing for textarea */
+      }
+
+      #reviewForm input[type="number"] {
+        width: 100%;
+      }
+    </style>
+  </div>
+</div>
+
+<!-- Image Gallery Tab -->
+<div id="gallery" class="tab-pane fade animated-pane">
+  <h4 class="text-center fw-bold">More Images</h4>
+
+  <!-- Image Upload Button (Only for Logged-in Users) -->
+  {% if user.is_authenticated %}
+  <div class="text-center my-3">
+    <button
+      id="upload-btn"
+      onclick="document.getElementById('image-upload').click();"
+    >
+      <i class="bi bi-cloud-upload-fill"></i> Upload Image
+    </button>
+    <input
+      type="file"
+      id="image-upload"
+      style="display: none"
+      accept="image/*"
+      multiple
+    />
+  </div>
+  {% endif %}
+
+  <!-- Image Gallery Grid -->
+  <div class="row mt-3">
+    {% for image in images %}
+    <div class="col-md-4 mb-4">
+      <!-- Image Thumbnail -->
+      <img
+        src="{{ image.image.url }}"
+        class="img-fluid rounded shadow mt-2 gallery-image"
+        alt="Image of {{ destination.name }}"
+        style="height: 300px; width: 100%; object-fit: cover; cursor: pointer"
+        data-bs-toggle="modal"
+        data-bs-target="#imageModal"
+        data-src="{{ image.image.url }}"
+        data-index="{{ forloop.counter0 }}"
+      />
+    </div>
+    {% empty %}
+    <p class="text-center">No additional images available.</p>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Image Modal -->
+<div
+  class="modal fade"
+  id="imageModal"
+  tabindex="-1"
+  aria-labelledby="imageModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0">
+      <div class="modal-header border-0">
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body text-center p-0">
+        <button class="carousel-control-prev" type="button" id="prevImage">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <img id="modalImage" class="img-fluid" src="" alt="Image" />
+        <button class="carousel-control-next" type="button" id="nextImage">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const modalImage = document.getElementById("modalImage");
+    const prevButton = document.getElementById("prevImage");
+    const nextButton = document.getElementById("nextImage");
+    let currentIndex = 0;
+    let images = [];
+
+    // Initialize the modal with the first image
+    document.querySelectorAll(".gallery-image").forEach((img, index) => {
+      img.addEventListener("click", () => {
+        currentIndex = index;
+        images = document.querySelectorAll(".gallery-image");
+        updateModalImage();
+      });
+    });
+
+    // Update the modal image
+    function updateModalImage() {
+      const imageSrc = images[currentIndex].getAttribute("data-src");
+      modalImage.src = imageSrc;
+    }
+
+    // Previous image button click event
+    prevButton.addEventListener("click", () => {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateModalImage();
+      }
+    });
+
+    // Next image button click event
+    nextButton.addEventListener("click", () => {
+      if (currentIndex < images.length - 1) {
+        currentIndex++;
+        updateModalImage();
+      }
+    });
+
+    // Keyboard navigation
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "ArrowLeft") {
+        prevButton.click();
+      } else if (event.key === "ArrowRight") {
+        nextButton.click();
+      }
+    });
+  });
+</script>
+
+<!-- New Map Tab -->
+<div id="map" class="tab-pane fade animated-pane">
+  <h4 class="text-center fw-bold">Location Map</h4>
+  <div class="map-container mt-3">
+    {% if destination.map_iframe_url %}
+    <iframe
+      src="{{ destination.map_iframe_url }}"
+      width="100%"
+      height="600px"
+      style="border: 0"
+      allowfullscreen
+      loading="lazy"
+    >
+    </iframe>
+    {% else %}
+    <p class="text-center">Map not available for this destination.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div id="view360" class="tab-pane fade animated-pane">
+  <div class="position-relative">
+    {% if not user.is_authenticated %}
+    <!-- Blurred overlay for non-logged-in users -->
+    <div class="blur-overlay"></div>
+    <div class="overlay-content text-center">
+      <p class="text-white">You need to be logged in to access 360° views.</p>
+      <a
+        href="{% url 'AUTH:login' %}?next={% url 'main:destination_detail' destination.id %}"
+        class="btn btn-primary"
+        >Login</a
+      >
+    </div>
+    {% elif not user.is_subscribed %}
+    <!-- Blurred overlay for non-subscribed users -->
+    <div class="blur-overlay"></div>
+    <div class="overlay-content text-center">
+      <p class="text-white">
+        You need to be a subscribed member to access 360° views.
+      </p>
+      <a
+        href="{% url 'AUTH:subscribe' %}?next={% url 'main:destination_detail' destination.id %}"
+        class="btn btn-primary"
+        >Subscribe Now</a
+      >
+    </div>
+    {% endif %}
+
+    <!-- Actual 360° View Content -->
+    <div class="row mt-3">
+      {% for view in views_360 %}
+      <div class="col-md-6 mb-4">
+        <div class="view-item">
+          <!-- Embedded Google Maps Street View -->
+          {% if view.iframe_url %}
+          <div class="google-maps-container">
+            <iframe
+              src="{{ view.iframe_url }}"
+              width="100%"
+              height="400px"
+              style="border: 0"
+              allowfullscreen
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+            ></iframe>
+          </div>
+          {% endif %}
+          <!-- Custom 360° Panorama Image -->
+          {% if view.panorama_image %}
+          <div class="custom-360-container">
+            <img
+              src="{{ view.panorama_image.url }}"
+              alt="360 View of {{ view.destination.name }}"
+              class="custom-360 img-fluid"
+            />
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12">
+        <p class="text-center">No 360° views available.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript for Smooth Right-to-Left Transition and Bookmark Animation -->
+<script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const tabs = document.querySelectorAll("#destinationTabs .nav-link");
+        const tabPanes = document.querySelectorAll(".tab-pane");
+        let activeIndex = 0;
+
+        tabs.forEach((tab, index) => {
+          tab.addEventListener("click", function (e) {
+            e.preventDefault();
+            if (activeIndex === index) return;
+
+            let previousIndex = activeIndex;
+            activeIndex = index;
+
+            let activeTab = document.querySelector(".tab-pane.show.active");
+            let newTab = document.querySelector(this.getAttribute("data-bs-target"));
+
+            if (activeTab && newTab) {
+              activeTab.classList.remove("show", "active");
+              activeTab.classList.add("slide-out-right");
+
+              newTab.classList.remove("slide-in-left", "slide-out-right");
+              newTab.classList.add("slide-in-left");
+
+              setTimeout(() => {
+                activeTab.classList.remove("slide-out-right");
+                newTab.classList.add("show", "active");
+              }, 400);
+            }
+          });
+        });
+      });
+
+      document.addEventListener("DOMContentLoaded", function () {
+      const bookmarkBtn = document.getElementById("bookmark-btn");
+      if (bookmarkBtn) {
+          bookmarkBtn.addEventListener("click", function () {
+              const icon = document.getElementById("bookmark-icon");
+              if (icon) {
+
+                  if (!{{ user.is_authenticated|lower }}) {
+                      // Redirect to login if the user is not authenticated
+                      window.location.href = "{% url 'AUTH:login' %}?next={{ request.path }}";
+                      return;
+                  }
+
+                  fetch("{% url 'main:toggle_bookmark' destination.id %}", {
+                      method: "POST",
+                      headers: {
+                          "X-CSRFToken": "{{ csrf_token }}",
+                          "Content-Type": "application/json",
+                      },
+                  })
+                  .then((response) => response.json())
+                  .then((data) => {
+                      // Ensure the frontend state matches the backend state
+                      if (data.bookmarked) {
+                          icon.classList.add("bi-bookmark-fill");
+                          icon.classList.remove("bi-bookmark");
+                      } else {
+                          icon.classList.add("bi-bookmark");
+                          icon.classList.remove("bi-bookmark-fill");
+                      }
+                  })
+                  .catch((error) => {
+                      console.error('Error:', error);
+                      // Revert the icon state if there's an error
+                      icon.classList.toggle("bi-bookmark");
+                      icon.classList.toggle("bi-bookmark-fill");
+                  });
+              } else {
+                  console.error("Bookmark icon element not found.");
+              }
+          });
+      } else {
+          console.error("Bookmark button element not found.");
+      }
+  });
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const mapTab = document.querySelector("#map");
+      const mapContainer = document.getElementById("map-container");
+
+      let map;
+
+      // Initialize the map when the tab is shown
+      mapTab.addEventListener("shown.bs.tab", function () {
+        if (!map) {
+          map = L.map("map-container").setView(
+            [{{ destination.latitude }}, {{ destination.longitude }}],
+            13
+          );
+
+          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution:
+              '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          }).addTo(map);
+
+          L.marker([{{ destination.latitude }}, {{ destination.longitude }}])
+            .addTo(map)
+            .bindPopup("{{ destination.name }}")
+            .openPopup();
+        }
+      });
+    });
+
+    document.getElementById("image-upload").addEventListener("change", function (event) {
+      let formData = new FormData();
+      formData.append("image", event.target.files[0]);
+
+      fetch("{% url 'main:upload_image' destination.id %}", {
+        method: "POST",
+        body: formData,
+        headers: {
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          location.reload(); // Reload to display the new image
+        } else {
+          alert("Error uploading image.");
+        }
+      })
+      .catch(error => console.error("Upload Error:", error));
+    });
+</script>
+
+<!-- CSS for Blurred Overlay, Buttons, and Bookmark Animation -->
+<style>
+  .blur-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    z-index: 1;
+  }
+
+  .overlay-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+  }
+
+  .overlay-content .btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+  }
+
+  .overlay-content .btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #004085;
+  }
+
+  .animated-pane {
+    opacity: 0;
+    transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+  }
+
+  .tab-pane.show {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .slide-in-left {
+    transform: translateX(100%);
+  }
+
+  .slide-out-right {
+    transform: translateX(-100%);
+  }
+
+  .destinationTabsNav {
+    background-color: #ffffff; /* Change to your preferred background color */
+  }
+
+  .nav-tabs {
+    border-bottom: 2px solid #007bff;
+  }
+
+  .nav-tabs .nav-link {
+    color: #555;
+    font-weight: 600;
+    padding: 12px 24px; /* Adjust padding for better spacing */
+    border: none;
+    transition: all 0.3s ease-in-out;
+    background: linear-gradient(to right, #f8f9fa, #e9ecef);
+    border-radius: 10px 10px 0 0; /* Adjust border radius */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add box shadow */
+  }
+
+  .nav-tabs .nav-link:hover {
+    background: linear-gradient(to right, #dee2e6, #ced4da);
+    color: #000;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Enhance box shadow on hover */
+  }
+
+  .nav-tabs .nav-link.active {
+    background: linear-gradient(to right, #007bff, #0056b3);
+    color: white !important;
+    font-weight: bold;
+    border-radius: 10px 10px 0 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add box shadow for active state */
+  }
+
+  .views-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .view-item {
+    flex: 1;
+    min-width: 45%;
+  }
+
+  .street-view,
+  .custom-360-container img {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+  }
+
+  /* Bookmark Icon Animation */
+  .animate-bookmark {
+    transform: scale(1.2); /* Slightly enlarge the icon */
+    color: #007bff; /* Change color during animation */
+    animation: bounce 0.3s ease;
+  }
+
+  @keyframes bounce {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  #upload-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #4285f4;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  #upload-btn:hover {
+    background-color: #357ae8;
+  }
+
+  #upload-btn i {
+    margin-right: 8px;
+    font-size: 20px;
+  }
+
+  /* Modal Styling */
+  .modal-content {
+    border-radius: 10px;
+  }
+
+  .modal-header {
+    border-bottom: 1px solid #dee2e6;
+  }
+
+  .modal-title {
+    font-weight: bold;
+    color: #333;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  /* Hide inactive tabs */
+  .tab-pane:not(.active) {
+    display: none;
+  }
+
+  /* Resize modal according to image size */
+  .modal-dialog {
+    max-width: 100%;
+    margin: 1.75rem auto;
+  }
+
+  .modal-dialog .modal-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .modal-dialog .modal-body {
+    /*max-width: 100%;
+    max-height: 100%;*/
+    overflow: auto;
+  }
+
+  .modal-dialog .modal-body img {
+    /*max-width: 100%;
+    max-height: 100%;*/
+    object-fit: contain;
+  }
+</style>
+
+{% endblock %}
